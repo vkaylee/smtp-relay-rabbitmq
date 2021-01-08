@@ -1,1 +1,1 @@
-# smtp-relay-rabbitmq
+# github.com/vleedev/smtp-relay-rabbitmq
