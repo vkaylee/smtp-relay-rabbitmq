@@ -41,6 +41,8 @@ jobs:
           path: .cicd_variables
   # This workflow contains a single job called "build"
   build:
+    needs:
+      - generate-env-vars
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -79,7 +81,9 @@ jobs:
             RUN chmod +x smtp-relay-rabbitmq
             CMD ["./smtp-relay-rabbitmq"]
             EOF
-        run: echo "ok"
+            echo "" >> Dockerfile
+          args:
+            executable: /bin/zsh
         
       - name: Build app image
         run: docker build -t "ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE}" .
