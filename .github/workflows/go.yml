@@ -78,7 +78,9 @@ jobs:
             COPY ./smtp-relay-rabbitmq ./
             RUN chmod +x smtp-relay-rabbitmq
             CMD ["./smtp-relay-rabbitmq"]
-            EOF  
+            EOF
+        run: echo "ok"
+        
       - name: Build app image
         run: docker build -t "ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE}" .
       - name: Push app image
