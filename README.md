@@ -26,3 +26,21 @@ Use container image `ghcr.io/vleedev/smtp-relay-rabbitmq:latest`
                 SMTP_USERNAME: AKIATXPJWI7G5O3LIAFX
                 SMTP_PASSWORD: BNP9c2nm8taH7dpaZUXLpM7MP0OO6vQlSjfRX1Yk43vb
                 SMTP_DEFAULT_EMAIL: me@vlee.dev
+### Test service by publishing your contents to queue
+You must prepare your data by encode json structure as below
+    
+    {
+        "from" : "me@vlee.dev",
+        "to" : [
+            "admin@google.com",
+            "ad@facebook.com"
+        ],
+        "subject" : "My subject",
+        "body_type" : "text/html",
+        "body" : "<html><body><p>This one is a test email from smtp-relay-rabbitmq</p></body></html>",
+        "attachment" : [
+            "https://i.imgur.com/UbUQWHO.jpeg",
+        ]
+    }
+
+Note: publish to your queue with `content-type` = `application/json`
