@@ -72,19 +72,13 @@ jobs:
         run: go test -v ./...
       
       - name: Create Dockerfile
-        shell:
-          cmd: |
-            cat > Dockerfile << EOF
-            FROM ghcr.io/vleedev/cont-images:alpine-3.12.3
-            WORKDIR /srv/app
-            COPY ./smtp-relay-rabbitmq ./
-            RUN chmod +x smtp-relay-rabbitmq
-            CMD ["./smtp-relay-rabbitmq"]
-            EOF
-            echo "" >> Dockerfile
-          args:
-            executable: /bin/zsh
-        run: echo "ok"
+        run: |
+          echo "FROM ghcr.io/vleedev/cont-images:alpine-3.12.3" > Dockerfile
+          echo "WORKDIR /srv/app" >> Dockerfile
+          echo "COPY ./smtp-relay-rabbitmq ./" >> Dockerfile
+          echo "RUN chmod +x smtp-relay-rabbitmq" >> Dockerfile
+          echo "CMD [\"./smtp-relay-rabbitmq\"]" >> Dockerfile
+          
         
       - name: Build app image
         run: docker build -t "ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE}" .
