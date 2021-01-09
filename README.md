@@ -30,16 +30,16 @@ Use container image `ghcr.io/vleedev/smtp-relay-rabbitmq:latest`
 You must prepare your data by encode json structure as below
     
     {
-        "from" : "me@vlee.dev",
-        "to" : [
+        "from": "me@vlee.dev",
+        "to": [
             "admin@google.com",
             "ad@facebook.com"
         ],
-        "subject" : "My subject",
-        "body_type" : "text/html",
-        "body" : "<html><body><p>This one is a test email from smtp-relay-rabbitmq</p></body></html>",
-        "attachment" : [
-            "https://i.imgur.com/UbUQWHO.jpeg",
+        "subject": "My subject",
+        "body_type": "text/html",
+        "body": "<html><body><p>This one is a test email from smtp-relay-rabbitmq</p></body></html>",
+        "attachment": [
+            "https://i.imgur.com/UbUQWHO.jpeg"
         ]
     }
 
