@@ -1,7 +1,8 @@
 # This is a basic workflow to help you get started with Actions
 
 name: CI
-
+env:
+  CI_REGISTRY_IMAGE: ghcr.io/${GITHUB_REPOSITORY}
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -81,7 +82,7 @@ jobs:
           
         
       - name: Build app image
-        run: docker build -t ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE} .
+        run: docker build -t "${APP_IMAGE}" .
       - name: Push app image
         run: docker push "${APP_IMAGE}"
       - name: Docker logout
