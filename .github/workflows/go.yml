@@ -69,18 +69,9 @@ jobs:
 
       - name: Test app
         run: go test -v ./...
-      
-      - name: Create Dockerfile
-        run: |
-          echo "FROM ghcr.io/vleedev/cont-images:alpine-3.12.3" > Dockerfile
-          echo "WORKDIR /srv/app" >> Dockerfile
-          echo "COPY ./smtp-relay-rabbitmq ./" >> Dockerfile
-          echo "RUN chmod +x smtp-relay-rabbitmq" >> Dockerfile
-          echo "CMD [\"/srv/app/smtp-relay-rabbitmq\"]" >> Dockerfile
-          
         
       - name: Build app image
-        run: docker build -t "${APP_IMAGE}" .
+        run: docker build -f ci.Dockerfile -t "${APP_IMAGE}" --target app .
       - name: Push app image
         run: docker push "${APP_IMAGE}"
       - name: Docker logout
