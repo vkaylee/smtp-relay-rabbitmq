@@ -1,6 +1,6 @@
 ![CI](https://github.com/vleedev/smtp-relay-rabbitmq/workflows/CI/badge.svg)
 # Description
-This app is used to listen a queue of rabbitmq and send email via smtp connection.
+This app is used to listen to a queue of rabbitmq and send an email via SMTP connection
 ## Using
 Use container image `ghcr.io/vleedev/smtp-relay-rabbitmq:latest`
 
