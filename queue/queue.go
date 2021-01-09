@@ -1,11 +1,17 @@
 package queue
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/streadway/amqp"
 	"github.com/vleedev/smtp-relay-rabbitmq/smtp"
 	"github.com/vleedev/smtp-relay-rabbitmq/utils"
 	"log"
+	"strings"
 )
+const acceptedContentType = "application/json"
+
 type Queue struct {
 	Connection	*amqp.Connection
 	queueInfo	amqp.Queue
@@ -13,10 +19,10 @@ type Queue struct {
 }
 func Init(queueName string, amqpUrl string) *Queue {
 	conn, err := amqp.Dial(amqpUrl)
-	utils.CheckErr(err)
+	utils.ErrFatal(err)
 
 	ch, err := conn.Channel()
-	utils.CheckErr(err)
+	utils.ErrFatal(err)
 
 	q, err := ch.QueueDeclare(
 		queueName, // name
@@ -26,7 +32,7 @@ func Init(queueName string, amqpUrl string) *Queue {
 		false,     // no-wait
 		nil,       // arguments
 	)
-	utils.CheckErr(err)
+	utils.ErrFatal(err)
 	return &Queue{
 		Connection: conn,
 		queueInfo:  q,
@@ -44,7 +50,7 @@ func (q *Queue) messageChan() <-chan amqp.Delivery {
 		false,  // no-wait
 		nil,    // args
 	)
-	utils.CheckErr(err)
+	utils.ErrFatal(err)
 	return msgs
 }
 
@@ -52,21 +58,41 @@ func (q *Queue) Consume(m *smtp.Mail)  {
 	forever := make(chan bool)
 	go func() {
 		for d := range q.messageChan() {
-			log.Println(string(d.Body))
+
+			log.Println("Received: 1 email from queue.")
+
+			if strings.EqualFold(acceptedContentType, d.ContentType) {
+				var email smtp.MailTemplate
+				err := json.Unmarshal(d.Body, &email)
+				utils.ErrPrintln(err)
+
+
+				if err := m.NewMail(email); err != nil {
+					utils.ErrPrintln(err)
+				} else if err := m.Send(); err != nil {
+					utils.ErrPrintln(err)
+				} else {
+					log.Println("Sent: 1 email from queue.")
+				}
+			} else {
+				utils.ErrPrintln(errors.New(fmt.Sprintf("the queue message content-type must be in %s", acceptedContentType)))
+			}
 		}
 	}()
 	log.Println(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
-func (q *Queue) Send(info string) {
-	err := q.Channel.Publish(
+func (q *Queue) Send(info interface{}) {
+	data, err := json.Marshal(info)
+	utils.ErrFatal(err)
+	err = q.Channel.Publish(
 		"",     // exchange
 		q.queueInfo.Name, // routing key
 		false,  // mandatory
 		false,  // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(info),
+			ContentType: acceptedContentType,
+			Body:        data,
 		})
-	utils.CheckErr(err)
+	utils.ErrFatal(err)
 }

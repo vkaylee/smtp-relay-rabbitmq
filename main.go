@@ -18,16 +18,25 @@ func main() {
 	defer q.Channel.Close()
 	// Init email client
 	smtpPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
-	utils.CheckErr(err)
+	utils.ErrFatal(err)
 	smtpConfig := smtp.Config{
 		Hostname: os.Getenv("SMTP_HOSTNAME"),
 		Port:     smtpPort,
 		Username: os.Getenv("SMTP_USERNAME"),
 		Password: os.Getenv("SMTP_PASSWORD"),
+		DefaultEmail: os.Getenv("SMTP_DEFAULT_EMAIL"),
 	}
 	smMail := smtp.Init(&smtpConfig)
 	// Test smtp service
 	smMail.Test()
+	// Test send queue
+	mailTemp := smtp.MailTemplate{
+		Subject:    "smtp-relay-rabbitmq queue",
+		BodyType:   "text/html",
+		Body:       "<b>This email is from the queue</b>",
+		Attachment: nil,
+	}
+	q.Send(mailTemp)
 	// Consume service
 	q.Consume(smMail)
 }

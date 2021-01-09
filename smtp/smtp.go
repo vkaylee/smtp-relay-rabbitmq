@@ -1,30 +1,37 @@
 package smtp
 
 import (
+	"errors"
+	"github.com/vleedev/smtp-relay-rabbitmq/utils"
 	"gopkg.in/gomail.v2"
-	"log"
+	"net"
+	"regexp"
+	"strings"
 )
 /*
 Mail is a generic struct type for representing a mail send request.
 */
 type Mail struct {
-	message		*gomail.Message
-	client		*gomail.Dialer
+	message			*gomail.Message
+	client			*gomail.Dialer
+	emailRegex		*regexp.Regexp
+	defaultEmail	string
 }
 
 type MailTemplate struct {
-	From       	string
-	To         	[]string
-	Subject    	string
-	BodyType   	string
-	Body       	string
-	Attachment 	[]string
+	From       	string		`json:"from"`
+	To         	[]string	`json:"to"`
+	Subject    	string		`json:"subject"`
+	BodyType   	string		`json:"body_type"`
+	Body       	string		`json:"body"`
+	Attachment 	[]string	`json:"attachment"`
 }
 type Config struct {
-	Hostname	string
-	Port		int
-	Username	string
-	Password	string
+	Hostname		string
+	Port			int
+	Username		string
+	Password		string
+	DefaultEmail	string
 }
 func Init(c *Config) *Mail {
 	return &Mail{
@@ -35,19 +42,67 @@ func Init(c *Config) *Mail {
 			c.Username,
 			c.Password,
 		),
+		emailRegex: regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"),
+		defaultEmail: c.DefaultEmail,
 	}
 }
 
-func (m *Mail) NewMail(mailTemp MailTemplate) {
+func (m *Mail) NewMail(mailTemp MailTemplate) error {
+	if strings.EqualFold(mailTemp.From, "") {
+		mailTemp.From = m.defaultEmail
+	}
+	if !m.isEmailValid(mailTemp.From) {
+		return errors.New("the form email is not valid")
+	}
 	m.message.SetHeader("From", mailTemp.From)
+
+	// Set default destination email if no input
+	if len(mailTemp.To) == 0 {
+		mailTemp.To = []string{m.defaultEmail}
+	}
+
+	for _, toEmail := range mailTemp.To {
+		if !m.isEmailValid(toEmail) {
+			return errors.New("the destination email is not valid")
+		}
+	}
 	m.message.SetHeader("To", mailTemp.To...)
+	if strings.EqualFold(mailTemp.Subject, "") {
+		return errors.New("the email must have a subject")
+	}
 	m.message.SetHeader("Subject", mailTemp.Subject)
+	if strings.EqualFold(mailTemp.BodyType, "") {
+		return errors.New("the email must have a body type")
+	}
+	if strings.EqualFold(mailTemp.Body, "") {
+		return errors.New("the email must have a body contents")
+	}
 	m.message.SetBody(mailTemp.BodyType, mailTemp.Body)
 	if len(mailTemp.Attachment) > 0 {
 		for _, attachment := range mailTemp.Attachment {
 			m.message.Attach(attachment)
 		}
 	}
+	return nil
+}
+// isEmailValid checks if the email provided passes the required structure
+// and length test. It also checks the domain has a valid MX record.
+func (m *Mail) isEmailValid(email string) bool {
+	if strings.EqualFold(email, "") {
+		return false
+	}
+	if len(email) < 3 && len(email) > 254 {
+		return false
+	}
+	if !m.emailRegex.MatchString(email) {
+		return false
+	}
+	parts := strings.Split(email, "@")
+	mx, err := net.LookupMX(parts[1])
+	if err != nil || len(mx) == 0 {
+		return false
+	}
+	return true
 }
 /*
 MailSend sends email with settings configured by envs.
@@ -56,15 +111,13 @@ func (m *Mail) Send() error {
 	return m.client.DialAndSend(m.message)
 }
 func (m *Mail) Test() {
-	m.NewMail(MailTemplate{
-		From:       "test@vlee.dev",
-		To:         []string{"tuanlm1989@gmail.com"},
+	_ = m.NewMail(MailTemplate{
 		Subject:    "Welcome to smtp-relay-rabbitmq",
 		BodyType:   "text/html",
 		Body:       "<html><body><p>This one is a test email from smtp-relay-rabbitmq</p></body></html>",
 		Attachment: nil,
 	})
 	if err := m.Send(); err != nil {
-		log.Fatalln("Please check your smtp configuration!")
+		utils.ErrFatal(errors.New("please check your smtp configuration"))
 	}
 }
