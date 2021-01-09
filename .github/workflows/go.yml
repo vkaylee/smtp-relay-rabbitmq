@@ -76,7 +76,7 @@ jobs:
           echo "WORKDIR /srv/app" >> Dockerfile
           echo "COPY ./smtp-relay-rabbitmq ./" >> Dockerfile
           echo "RUN chmod +x smtp-relay-rabbitmq" >> Dockerfile
-          echo "CMD [\"./smtp-relay-rabbitmq\"]" >> Dockerfile
+          echo "CMD [\"/srv/app/smtp-relay-rabbitmq\"]" >> Dockerfile
           
         
       - name: Build app image
