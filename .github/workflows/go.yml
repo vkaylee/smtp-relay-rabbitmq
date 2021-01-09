@@ -1,8 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
 name: CI
-env:
-  CI_REGISTRY_IMAGE: ghcr.io/${GITHUB_REPOSITORY}
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -30,9 +28,9 @@ jobs:
         run: |
           TAG=$(git describe --tags --always)
           echo "TAG=${TAG}" > .cicd_variables
-          echo "APP_IMAGE=${CI_REGISTRY_IMAGE}:${TAG}" >> .cicd_variables
-          echo "APP_IMAGE_RELEASE=${CI_REGISTRY_IMAGE}:${TAG}-release" >> .cicd_variables
-          echo "APP_IMAGE_LATEST=${CI_REGISTRY_IMAGE}:latest" >> .cicd_variables
+          echo "APP_IMAGE=ghcr.io/${GITHUB_REPOSITORY}:${TAG}" >> .cicd_variables
+          echo "APP_IMAGE_RELEASE=ghcr.io/${GITHUB_REPOSITORY}:${TAG}-release" >> .cicd_variables
+          echo "APP_IMAGE_LATEST=ghcr.io/${GITHUB_REPOSITORY}:latest" >> .cicd_variables
       - name: Test CICD variable file
         run: cat .cicd_variables
       - name: Upload CICD variable file
