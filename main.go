@@ -34,7 +34,7 @@ func main() {
 		Subject:    "smtp-relay-rabbitmq queue",
 		BodyType:   "text/html",
 		Body:       "<b>This email is from the queue</b>",
-		Attachment: nil,
+		Attachment: []string{"https://i.imgur.com/UbUQWHO.jpeg"},
 	}
 	q.Send(mailTemp)
 	// Consume service

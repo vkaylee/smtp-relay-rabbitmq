@@ -2,11 +2,18 @@ package smtp
 
 import (
 	"errors"
+	"fmt"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/vleedev/smtp-relay-rabbitmq/utils"
 	"gopkg.in/gomail.v2"
+	"io/ioutil"
+	"math/rand"
 	"net"
+	"net/http"
+	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 /*
 Mail is a generic struct type for representing a mail send request.
@@ -79,8 +86,20 @@ func (m *Mail) NewMail(mailTemp MailTemplate) error {
 	}
 	m.message.SetBody(mailTemp.BodyType, mailTemp.Body)
 	if len(mailTemp.Attachment) > 0 {
-		for _, attachment := range mailTemp.Attachment {
-			m.message.Attach(attachment)
+		for _, attachmentUrl := range mailTemp.Attachment {
+			if fileName, err := m.downloadFile(attachmentUrl); err != nil {
+				utils.ErrPrintln(err)
+			} else {
+				m.message.Attach(fileName)
+				// Auto delete file after 1 minute
+				go func() {
+					time.Sleep(time.Minute)
+					err := os.Remove(fileName)  // remove a single file
+					if err != nil {
+						utils.ErrPrintln(err)
+					}
+				}()
+			}
 		}
 	}
 	return nil
@@ -120,4 +139,34 @@ func (m *Mail) Test() {
 	if err := m.Send(); err != nil {
 		utils.ErrFatal(errors.New("please check your smtp configuration"))
 	}
+}
+func (m *Mail) downloadFile(URL string) (string, error) {
+	//Get the response bytes from the url
+	response, err := http.Get(URL)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		return "", errors.New("received non 200 response code")
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+	mime := mimetype.Detect(body)
+	// Gen random file name
+	fileName := fmt.Sprintf("attachment-%d%s", rand.Uint64(), mime.Extension())
+	// Only allow this type
+	allowed := []string{"image/jpeg", "image/png", "image/gif"}
+	if !mimetype.EqualsAny(mime.String(), allowed...) {
+		return "", err
+	}
+	// Write file to disk
+	err = ioutil.WriteFile(fileName, body, 0777)
+	if err != nil {
+		return "", err
+	}
+	return fileName, nil
 }
