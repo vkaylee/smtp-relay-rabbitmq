@@ -44,3 +44,10 @@ You must prepare your data by encode json structure as below
     }
 
 Note: publish to your queue with `content-type` = `application/json`
+
+### Sign up a cloud amqp queue
+Website: https://www.cloudamqp.com/
+
+### Code Boilerplate
+Look for your favourite language and implement it
+https://www.rabbitmq.com/getstarted.html
