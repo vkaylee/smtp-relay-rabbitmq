@@ -124,14 +124,3 @@ MailSend sends email with settings configured by envs.
 func (m *Mail) Send() error {
 	return m.client.DialAndSend(m.message)
 }
-func (m *Mail) Test() {
-	_ = m.NewMail(MailTemplate{
-		Subject:    "Welcome to smtp-relay-rabbitmq",
-		BodyType:   "text/html",
-		Body:       "<html><body><p>This one is a test email from smtp-relay-rabbitmq</p></body></html>",
-		Attachment: nil,
-	})
-	if err := m.Send(); err != nil {
-		utils.ErrFatal(errors.New("please check your smtp configuration"))
-	}
-}

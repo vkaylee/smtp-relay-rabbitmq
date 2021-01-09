@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"github.com/vleedev/smtp-relay-rabbitmq/queue"
 	"github.com/vleedev/smtp-relay-rabbitmq/smtp"
 	"github.com/vleedev/smtp-relay-rabbitmq/utils"
@@ -9,6 +11,10 @@ import (
 )
 
 func main() {
+	hostname, err := os.Hostname()
+	if err != nil {
+		utils.ErrFatal(err)
+	}
 	// Init queue
 	q := queue.Init(
 		os.Getenv("QUEUE_NAME"),
@@ -28,12 +34,20 @@ func main() {
 	}
 	smMail := smtp.Init(&smtpConfig)
 	// Test smtp service
-	smMail.Test()
+	_ = smMail.NewMail(smtp.MailTemplate{
+		Subject:    "Welcome to smtp-relay-rabbitmq",
+		BodyType:   "text/html",
+		Body:       fmt.Sprintf("<html><body><p>This one is a test email from smtp-relay-rabbitmq<br />Hostname: %s</p></body></html>", hostname),
+		Attachment: nil,
+	})
+	if err := smMail.Send(); err != nil {
+		utils.ErrFatal(errors.New("please check your smtp configuration"))
+	}
 	// Test send queue
 	mailTemp := smtp.MailTemplate{
 		Subject:    "smtp-relay-rabbitmq queue",
 		BodyType:   "text/html",
-		Body:       "<b>This email is from the queue</b>",
+		Body:       fmt.Sprintf("<html><body><p><b>This email is from the queue</b><br />Hostname: %s</p></body></html>", hostname),
 		Attachment: []string{"https://i.imgur.com/UbUQWHO.jpeg"},
 	}
 	q.Send(mailTemp)
