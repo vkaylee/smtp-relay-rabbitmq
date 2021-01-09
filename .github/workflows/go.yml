@@ -56,20 +56,6 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Import ENV
         run: cat ${{steps.my-cicd-download.outputs.download-path}}/cicd_variables/.cicd_variables >> $GITHUB_ENV
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.15
-
-      - name: Build app
-        run: |
-          go get -d -v ./...
-          go install -v ./...
-          env GOOS=linux GOARCH=amd64 go build -o ./smtp-relay-rabbitmq main.go
-
-      - name: Test app
-        run: go test -v ./...
-        
       - name: Build app image
         run: docker build -f ci.Dockerfile -t "${APP_IMAGE}" --target app .
       - name: Push app image
