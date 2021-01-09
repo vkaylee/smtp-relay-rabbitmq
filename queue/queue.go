@@ -2,6 +2,7 @@ package queue
 
 import (
 	"github.com/streadway/amqp"
+	"github.com/vleedev/smtp-relay-rabbitmq/smtp"
 	"github.com/vleedev/smtp-relay-rabbitmq/utils"
 	"log"
 )
@@ -47,7 +48,7 @@ func (q *Queue) messageChan() <-chan amqp.Delivery {
 	return msgs
 }
 
-func (q *Queue) Consume()  {
+func (q *Queue) Consume(m *smtp.Mail)  {
 	forever := make(chan bool)
 	go func() {
 		for d := range q.messageChan() {
