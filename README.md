@@ -4,7 +4,7 @@ This app is used to listen a queue and send email via smtp config.
 ## Using
 Use container image `ghcr.io/vleedev/smtp-relay-rabbitmq:latest`
 
-### Set Environments
+### Set environment variables
     RABBITMQ_URL: your rabbitmq url service
     QUEUE_NAME: a queue name to listen on that service
     SMTP_HOSTNAME: smtp host
