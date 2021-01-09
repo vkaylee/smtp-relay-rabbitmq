@@ -81,7 +81,7 @@ jobs:
           
         
       - name: Build app image
-        run: docker build -t "ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE}" .
+        run: docker build -t ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE} .
       - name: Push app image
         run: docker push "${APP_IMAGE}"
       - name: Docker logout
