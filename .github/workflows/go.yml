@@ -84,6 +84,7 @@ jobs:
             echo "" >> Dockerfile
           args:
             executable: /bin/zsh
+        run: echo "ok"
         
       - name: Build app image
         run: docker build -t "ghcr.io/${GITHUB_REPOSITORY}:${APP_IMAGE}" .
