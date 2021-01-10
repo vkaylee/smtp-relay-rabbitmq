@@ -2,7 +2,7 @@
 # Description
 This app is used to listen to a queue of rabbitmq and send an email via SMTP connection
 ## Using
-Use container image `ghcr.io/vleedev/smtp-relay-rabbitmq:latest`
+Use container image `vleedev/smtp-relay-rabbitmq:latest`
 
 ### Set environment variables
     RABBITMQ_URL: your rabbitmq url service
@@ -17,7 +17,7 @@ Use container image `ghcr.io/vleedev/smtp-relay-rabbitmq:latest`
     version: '3.7'
     services:
         smtp-relay-rabbitmq:
-            image: ghcr.io/vleedev/smtp-relay-rabbitmq:latest
+            image: vleedev/smtp-relay-rabbitmq:latest
             environment:
                 RABBITMQ_URL: amqps://wrfizrrb:Fz3wHpwrwLL39J31ekLR8kR_bBT0s8ruv@cougar.rmq.cloudamqp.com/wrfizrrb
                 QUEUE_NAME: my_project_app_email_queue
